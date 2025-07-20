@@ -1,15 +1,18 @@
-# main.py – Daily Macro Zone Alert Bot (Reclaim Ladder Strategy)
+# main.py – BuySellZonesCrypyoBot (Reclaim Ladder Strategy Alerts)
+import os
 import requests
 from datetime import datetime
+from dotenv import load_dotenv
 
-# === CONFIG ===
-BOT_TOKEN = "7966331696:AAGAAvwtWAjYJsVO2LBNBVeQ3WHIbqexSMI"
-CHAT_ID = "6652085600"  # Your personal Telegram chat ID
+# === Load credentials from .env ===
+load_dotenv()
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+CHAT_ID = os.getenv("CHAT_ID")
 
-# === DYNAMIC DATE ===
+# === Format today's date ===
 today = datetime.now().strftime("%B %d, %Y")
 
-# === ALERT MESSAGE ===
+# === Prepare daily macro alert message ===
 message = f"""📊 Daily Swing Alert – {today}
 🧭 Strategy: Reclaim Ladder
 
@@ -49,7 +52,7 @@ message = f"""📊 Daily Swing Alert – {today}
 📝 Notes: Weekly OB zone – only enter on reclaim
 """
 
-# === SEND ALERT ===
+# === Send alert to Telegram ===
 url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 params = {"chat_id": CHAT_ID, "text": message}
 
@@ -57,4 +60,4 @@ response = requests.get(url, params=params)
 if response.status_code == 200:
     print("✅ Telegram alert sent successfully.")
 else:
-    print("❌ Failed to send alert:", response.text)
+    print(f"❌ Failed to send alert: {response.text}")
