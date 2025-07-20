@@ -17,11 +17,24 @@ def fetch_weekly_candles_from_coingecko(coin_id="bitcoin", vs_currency="usd", da
     df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
     df.set_index("timestamp", inplace=True)
 
-    # Resample daily data into weekly OHLC
+    # Convert to weekly OHLC
     ohlc = df["price"].resample("W").ohlc().dropna()
     ohlc = ohlc.rename(columns={"open": "Open", "high": "High", "low": "Low", "close": "Close"})
     return ohlc
 
-# Example: BTC
+def detect_orderblock(weekly_df):
+    for i in range(len(weekly_df) - 2, 1, -1):
+        current = weekly_df.iloc[i]
+        next_candle = weekly_df.iloc[i + 1]
+        if current["Close"] < current["Open"]:
+            if next_candle["Close"] > next_candle["Open"] and next_candle["Close"] > current["High"]:
+                return {
+                    "zone": f"${round(current['Low'], 2)} – ${round(current['High'], 2)}",
+                    "date": weekly_df.index[i].strftime("%Y-%m-%d")
+                }
+    return {"zone": "Not Found", "date": "N/A"}
+
+# Example usage:
 btc_weekly = fetch_weekly_candles_from_coingecko("bitcoin")
-print(btc_weekly.tail(5))
+btc_orderblock = detect_orderblock(btc_weekly)
+print(f"BTC Orderblock Zone: {btc_orderblock['zone']} (From week of {btc_orderblock['date']})")
